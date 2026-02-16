@@ -13,4 +13,5 @@ class Auth{
       throw Exception('Failed to sign in: ${e.message}');
     }
   }
+
 }

@@ -103,6 +103,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               child: Row(
                 children: [
                   Expanded(child: TextField(
+                    maxLines: null,
                     controller: _messageController,
                     decoration: InputDecoration(
                       hintText: 'Type a message',
