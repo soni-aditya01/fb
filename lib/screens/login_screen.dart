@@ -1,4 +1,5 @@
 import 'package:fb/auth.dart';
+import 'package:fb/screens/signup_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -51,10 +52,10 @@ class _LoginPageState extends State<LoginPage> {
   }
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 24, 86, 114),
-        body: Center(
+    return Scaffold(
+      backgroundColor: Color(0xff2196f3),
+      body: SafeArea(
+        child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             // 2. Wrap your Column in a Form widget
@@ -72,11 +73,11 @@ class _LoginPageState extends State<LoginPage> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email'; // The error message
                       }
-
+        
                       bool emailValid = RegExp(
                               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                           .hasMatch(value);
-
+        
                       if (!emailValid) {
                         return 'Please enter a valid email address';
                       }
@@ -86,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                   TextFormField(
                     style: const TextStyle(color: Colors.white),
                     controller: passwordController,
-                    obscureText: true, // Hides the password
+                    obscureText: true, 
                     decoration: const InputDecoration(hintText: "Password", hintStyle: TextStyle(color: Colors.white)),
                   ),
                   ElevatedButton(
@@ -95,6 +96,12 @@ class _LoginPageState extends State<LoginPage> {
                       loginUser();
                     },
                     child: _isloading ? const CircularProgressIndicator(color: Colors.white) : const Text("Login"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => SignupScreen()));
+                    },
+                    child: const Text("Don't have an account? Sign Up", style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),

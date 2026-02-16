@@ -33,20 +33,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xff2196f3),
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const CircleAvatar(
-              backgroundColor: Colors.grey,
-              child: Icon(Icons.person, color: Colors.white),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xff2196f3),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: const CircleAvatar(
+            backgroundColor: Colors.grey,
+            child: Icon(Icons.person, color: Colors.white),
           ),
-          title: Text(widget.friendId),    // Placeholder, ideally should show friend's name
         ),
-        body: Column(
+        title: Text(widget.friendId),    // Placeholder, ideally should show friend's name
+      ),
+      body: SafeArea(
+        child: Column(
           children: [
             Expanded(child: StreamBuilder(
               stream: FirebaseFirestore.instance
@@ -60,7 +60,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
+            
                 // 2. Empty State
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text("Say Hi! 👋"));
@@ -71,7 +71,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   itemBuilder: (context, index) {
                     var msgData = snapshot.data!.docs[index];
                     bool isMe = msgData['senderId'] == currentUserId;
-
+            
                     return Align(
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
@@ -103,7 +103,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               child: Row(
                 children: [
                   Expanded(child: TextField(
-                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    minLines: 1,
+                    maxLines: 5,
                     controller: _messageController,
                     decoration: InputDecoration(
                       hintText: 'Type a message',
@@ -129,8 +131,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ),
             )
           ],
-        )
-      ),
+        ),
+      )
     );
   }
 }
