@@ -25,8 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
+    return  Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xff2196f3),
           title: Text('Alter'),
@@ -39,17 +38,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: PageView(
-          controller: pageController,
-          onPageChanged: (index) {
-            setState(() {
-              _page = index;
-            });
-          },
-          children: [
-            Center(child: ChatScreen()),
-            Center(child: Text('Confessions Screen')),
-          ],
+        body: SafeArea(
+          child: PageView(
+            controller: pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _page = index;
+              });
+            },
+            children: [
+              Center(child: ChatScreen()),
+              Center(child: Text('Confessions Screen')),
+            ],
+          ),
         ),
 
         bottomNavigationBar: BottomNavigationBar(
@@ -72,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

@@ -15,6 +15,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   TextEditingController _messageController = TextEditingController();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
+  late Stream<QuerySnapshot> _stream;
+  void initState() {
+    super.initState();
+    _stream= FirebaseFirestore.instance
+                  .collection('chats')
+                  .doc(widget.chatId)
+                  .collection('messages')
+                  .orderBy('timestamp', descending: true) // Newest at bottom
+                  .snapshots();
+  }
+
   void sendMessage() async {
     String text = _messageController.text.trim();
     if (text.isEmpty) return;
@@ -49,12 +60,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         child: Column(
           children: [
             Expanded(child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('chats')
-                  .doc(widget.chatId)
-                  .collection('messages')
-                  .orderBy('timestamp', descending: true) // Newest at bottom
-                  .snapshots(),
+              stream: _stream,
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 // 1. Loading State
                 if (snapshot.connectionState == ConnectionState.waiting) {

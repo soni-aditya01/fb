@@ -1,3 +1,4 @@
+import 'package:fb/auth.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -14,6 +15,29 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController confirmpasswordController = TextEditingController();
   bool _isloading = false;
   final _formKey = GlobalKey<FormState>();
+
+  void signUp() async{
+    if(_formKey.currentState!.validate()){
+      setState(() {
+        _isloading = true;});
+        try{
+          await Auth().signUpWithEmailPassword(
+            emailController.text, passwordController.text, nameController.text);
+            Navigator.pop(context);
+        } catch(e){
+          if(context.mounted){
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(e.toString())),
+            );
+          }
+        } finally {
+          setState(() {
+            _isloading = false;
+          });
+        }
+      };
+    }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,6 +57,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: 'Name',
                     hintStyle: TextStyle(color: Colors.white),
                   ),
+                  validator: (value)=> value == null || value.isEmpty ? 'Please enter your name' : null
                 ),
                 TextFormField(
                   controller: emailController,
@@ -40,6 +65,20 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: 'Email',
                     hintStyle: TextStyle(color: Colors.white),
                   ),
+                  validator: (value) {
+                     if (value == null || value.isEmpty) {
+                        return 'Please enter your email'; // The error message
+                      }
+        
+                      bool emailValid = RegExp(
+                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                          .hasMatch(value);
+        
+                      if (!emailValid) {
+                        return 'Please enter a valid email address';
+                      }
+                      return null;
+                  },
                 ),
                 TextFormField(
                   controller: passwordController,
@@ -48,6 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: 'Password',
                       hintStyle: TextStyle(color: Colors.white),
                   ),
+                  validator: (value) => value == null || value.isEmpty ? 'Please enter a password' : null
                 ),
                 TextFormField(
                   controller: confirmpasswordController,
@@ -56,11 +96,12 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: 'Confirm Password',
                     hintStyle: TextStyle(color: Colors.white),
                   ),
+                  validator: (value) => value != passwordController.text?'Passwords do not match':null
                 ),
                 SizedBox(height: 24.0),
                 ElevatedButton( 
-                  onPressed: (){},
-                  child: Text("Sign Up")
+                  onPressed: signUp,
+                  child: _isloading? CircularProgressIndicator(): Text('Sign Up')
                 )
               ],
             ),

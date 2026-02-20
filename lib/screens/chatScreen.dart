@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fb/screens/chatRoom.dart';
+import 'package:fb/screens/newChat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         shape: CircleBorder(),
-        onPressed: () {},
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NewChatScreen())),
         backgroundColor: const Color(0xff2196f3),
         child: const Icon(Icons.add),
       ),

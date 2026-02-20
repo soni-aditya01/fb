@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
         _isloading = true;
       });
       try {
-      User user=await Auth().signInWithEmailAndPassword(
+      await Auth().signInWithEmailAndPassword(
         emailController.text, passwordController.text);
 
 
