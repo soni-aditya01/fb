@@ -25,38 +25,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .snapshots();
   }
 
-  Widget _buildChatTile(String chatId, String friendId, String friendName, Map<String, dynamic> chatData) {
-  return ListTile(
-    onTap: () => Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChatRoomScreen(
-          chatId: chatId,
-          friendId: friendId,
-          friendName: friendName,
-        ),
-      ),
-    ),
-    leading: CircleAvatar(
-      backgroundColor: Colors.blueAccent.shade100,
-      child: Text(
-        friendName[0].toUpperCase(),
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    ),
-    title: Text(friendName, style: const TextStyle(fontWeight: FontWeight.bold)),
-    subtitle: Text(
-      chatData['lastMessage'] ?? "No messages yet",
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    ),
-    trailing: Text(
-      formatTimeOrDate(chatData['lastTimestamp']),
-      style: const TextStyle(fontSize: 12, color: Colors.grey),
-    ),
-  );
-}
-
   Future<String> getFriendName(String uid) async {
     // Check memory first (0 reads)
     if (names.containsKey(uid)) {
@@ -120,7 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
       body: StreamBuilder(
         stream: _stream,
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -133,34 +101,72 @@ class _ChatScreenState extends State<ChatScreen> {
           }
 
           return ListView.builder(
-            itemExtent: 72.0,
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-  var chatDoc = snapshot.data!.docs[index];
-  var chatData = chatDoc.data() as Map<String, dynamic>;
+              var chatDoc = snapshot.data!.docs[index];
+              var chatData = chatDoc.data() as Map<String, dynamic>;
 
-  List participants = chatData['participants'];
-  String friendId = participants.firstWhere((id) => id != currentUserId);
+              // LOGIC: Find the "Other Person's" ID
+              // The 'participants' array has 2 IDs. We filter out ours to find the friend's.
+              List participants = chatData['participants'];
+              String friendId = participants.firstWhere(
+                (id) => id != currentUserId,
+              );
 
-  // --- THE MASTER FIX: SHORT-CIRCUIT ---
-  // 1. Check the cache MANUALLY first.
-  if (names.containsKey(friendId)) {
-    // If we have it, return the ListTile DIRECTLY. 
-    // No Builder = No Waiting Frame = NO FLICKER.
-    return _buildChatTile(chatDoc.id, friendId, names[friendId]!, chatData);
-  }
+              // TODO: Ideally, you would fetch the friend's Name/Image using this friendId.
+              // For now, we will display the ID or a placeholder.
 
-  // 2. Only use FutureBuilder if the name is truly missing from memory.
-  return FutureBuilder<String>(
-    future: getFriendName(friendId),
-    builder: (context, asyncSnapshot) {
-      if (!asyncSnapshot.hasData) {
-        return const SizedBox(height: 72); 
-      }
-      return _buildChatTile(chatDoc.id, friendId, asyncSnapshot.data!, chatData);
-    },
-  );
-},
+              return FutureBuilder<String>(
+                future: getFriendName(friendId),
+                initialData: names[friendId],
+                builder: (context, asyncSnapshot) {
+                  // Fixed: Height set to 72 to match ListTile; better state checking
+                  if (asyncSnapshot.connectionState ==
+                          ConnectionState.waiting &&
+                      !asyncSnapshot.hasData) {
+                    return const SizedBox(height: 72);
+                  }
+
+                  String friendName = asyncSnapshot.data ?? 'Unknown User';
+
+                  return ListTile(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatRoomScreen(
+                          chatId: chatDoc.id,
+                          friendId: friendId,
+                          friendName: friendName,
+                        ),
+                      ),
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blueAccent.shade100,
+                      child: Text(
+                        friendName[0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      friendName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      chatData['lastMessage'] ?? "No messages yet",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      formatTimeOrDate(chatData['lastTimestamp']),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  );
+                },
+              );
+            },
           );
         },
       ),
