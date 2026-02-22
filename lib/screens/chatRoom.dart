@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 class ChatRoomScreen extends StatefulWidget {
   final String chatId;
   final String friendId;
-  const ChatRoomScreen({super.key, required this.chatId, required this.friendId});
+  final String friendName; 
+  const ChatRoomScreen({super.key, required this.chatId, required this.friendId, required this.friendName});
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -28,6 +29,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void sendMessage() async {
     String text = _messageController.text.trim();
+    _messageController.clear();
     if (text.isEmpty) return;
 
     await FirebaseFirestore.instance
@@ -40,7 +42,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    _messageController.clear();
+    await FirebaseFirestore.instance
+    .collection('chats')
+    .doc(widget.chatId)
+    .set({
+      'participants': [currentUserId, widget.friendId],
+      'lastMessage': text,
+      'lastTimestamp': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
   @override
   Widget build(BuildContext context) {
@@ -54,7 +63,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             child: Icon(Icons.person, color: Colors.white),
           ),
         ),
-        title: Text(widget.friendId),    // Placeholder, ideally should show friend's name
+        title: Text(widget.friendName),    // Placeholder, ideally should show friend's name
       ),
       body: SafeArea(
         child: Column(
